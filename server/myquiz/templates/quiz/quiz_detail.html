@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Details - {{ quiz.title }}</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      .quiz-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .quiz-header h1 {
+        font-size: 2em;
+        color: #333;
+      }
+
+      .quiz-info {
+        font-size: 1.1em;
+        color: #666;
+      }
+
+      .quiz-dates {
+        font-size: 0.9em;
+        color: #999;
+      }
+
+      .quiz-content {
+        margin-bottom: 20px;
+      }
+
+      .questions-list {
+        margin: 10px 0;
+      }
+
+      .question-card {
+        background-color: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 10px 0;
+
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+      }
+
+      .question-card .image {
+        max-width: 100%;
+      }
+      .question-card h3 {
+        margin: 0;
+        color: #333;
+      }
+
+      .options-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .options-list li {
+        margin: 5px 0;
+        color: #555;
+      }
+
+      .quiz-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+      }
+
+      .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+      }
+
+      .btn-secondary {
+        background-color: #6c757d;
+        color: #fff;
+      }
+
+      .btn:hover {
+        opacity: 0.8;
+      }
+      .correct-answer {
+        font-weight: bold;
+        color: #28a745; /* Green color for correct answers */
+        background-color: #d4edda; /* Light green background */
+        padding: 5px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="quiz-header">
+        <h1>{{ quiz.title|title }} {{ quiz.quiz_type|title }}</h1>
+        <p class="quiz-info" style="text-align: start; padding-left: 5%">
+          Type: <b> {{ quiz.quiz_type }} </b> <br />
+          Class: <b>{{ quiz.school_class }} </b> <br />
+          Subject: <b>{{ quiz.subject }} </b>
+        </p>
+        <p class="quiz-dates">
+          Start Date: {{ quiz.start_date }} | End Date: {{ quiz.end_date }}
+          <br />
+
+          <b>Duration: {{ quiz.duration }}</b>
+          <hr>
+        </p>
+      </header>
+
+      <div class="quiz-content">
+        <h2>Questions</h2>
+        <div class="questions-list">
+          {% for question in quiz.questions.all %}
+          <div class="question-card">
+            <div class="texts">
+              <h3>{{ forloop.counter }}. {{ question.question_text }}</h3>
+              <ul class="options-list">
+                <li>
+                  Option 1:
+                  <b> {% if question.option_1 == question.correct_answer %} </b>
+                  <span class="correct-answer">{{ question.option_1 }}</span>
+                  {% else %}{{ question.option_1 }}{% endif %}
+                </li>
+                <li>
+                  Option 2:
+                  <b> {% if question.option_2 == question.correct_answer %} </b>
+                  <span class="correct-answer">{{ question.option_2 }}</span>
+                  {% else %}{{ question.option_2 }}{% endif %}
+                </li>
+                <li>
+                  Option 3:
+                  <b> {% if question.option_3 == question.correct_answer %} </b>
+                  <span class="correct-answer">{{ question.option_3 }}</span>
+                  {% else %}{{ question.option_3 }}{% endif %}
+                </li>
+                <li>
+                  Option 4:
+                  <b> {% if question.option_4 == question.correct_answer %} </b>
+                  <span class="correct-answer">{{ question.option_4 }}</span>
+                  {% else %}{{ question.option_4 }}{% endif %}
+                </li>
+              </ul>
+            </div>
+            {% if question.image %}
+            <img src="{{ question.image.url }}" alt="" class="image" />
+            {% endif %}
+          </div>
+          {% empty %}
+          <p>No questions available for this quiz.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <footer class="quiz-footer">
+        <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary">
+          Take Quiz
+        </a>
+        <a href="{% url 'add-question' quiz.id %}" class="btn btn-secondary">
+          Add Questions
+        </a>
+        <a href="{% url 'quiz_result' score=0 %}" class="btn btn-secondary">
+          View Results
+        </a>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+.vscode
+__pycache__
+__pycache__/
+*.cpython-311.pyc
+__init__.cpython-311.pyc
+.venv
+/media/
+.env
+*.txt
+
+
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/server/node_modules
+/server/db.sqlite3
+/server/logs
+/client/node_modules
+/client/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/client/coverage
+
+# next.js
+/client/.next/
+/client/out/
+
+# production
+/client/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+approvehr-1

@@ -1,0 +1,368 @@
+{% load form_tags %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}My Quiz App{% endblock %}</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+    <style>
+      input.correct_answer {
+        display: none;
+      }
+      .correct-answer-option {
+        cursor: pointer;
+        padding: 5px;
+        margin: 5px 0;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        text-align: center;
+      }
+
+      .correct-answer-option.selected {
+        background-color: #007bff;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="text-center">Add Questions for "{{ quiz.title }}"</h2>
+      <form id="qForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row">
+          {{ formset.management_form }} {% for form in formset %}
+          <div class="col-md-12 mb-4">
+            <div class="card">
+              <div
+                class="d-flex justify-between card-header bg-primary text-white"
+              >
+                Question {{ forloop.counter }} {% if form.DELETE %}
+                <div class="form-check">
+                  {{ form.DELETE|add_class:"delete_if_empty" }}
+                  <label for="id_form-{{ forloop.counter0 }}-DELETE"
+                    >Delete this question</label
+                  >
+                </div>
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <span> {{ form.question_text.label_tag }} </span>
+                  {{ form.question_text|add_class:"form-control q_text" }}
+                </div>
+                <div class="form-group">
+                  <span> {{ form.image.label_tag }} </span>
+                  {{ form.image|add_class:"form-control-file" }}
+                  <div
+                    id="image-preview_{{ forloop.counter0 }}"
+                    class="image-preview mt-3"
+                  ></div>
+                </div>
+                <div class="form-row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <span> {{ form.option_1.label_tag }} </span>
+                      <input
+                        type="text"
+                        id="id_form-{{ forloop.counter0 }}-{{ form.option_1.name }}"
+                        value="{{ form.option_1.value }}"
+                        name="form-{{ forloop.counter0 }}-{{ form.option_1.name }}"
+                        class="form-control option-input"
+                        data-question="{{ forloop.counter0 }}"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <span> {{ form.option_2.label_tag }} </span>
+                      <input
+                        type="text"
+                        id="id_form-{{ forloop.counter0 }}-{{ form.option_2.name }}"
+                        value="{{ form.option_2.value }}"
+                        name="form-{{ forloop.counter0 }}-{{ form.option_2.name }}"
+                        class="form-control option-input"
+                        data-question="{{ forloop.counter0 }}"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <span> {{ form.option_3.label_tag }} </span>
+                      <input
+                        type="text"
+                        id="id_form-{{ forloop.counter0 }}-{{ form.option_3.name }}"
+                        value="{{ form.option_3.value }}"
+                        name="form-{{ forloop.counter0 }}-{{ form.option_3.name }}"
+                        class="form-control option-input"
+                        data-question="{{ forloop.counter0 }}"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <span> {{ form.option_4.label_tag }} </span>
+                      <input
+                        type="text"
+                        id="id_form-{{ forloop.counter0 }}-{{ form.option_4.name }}"
+                        name="form-{{ forloop.counter0 }}-{{ form.option_4.name }}"
+                        value="{{ form.option_4.value }}"
+                        class="form-control option-input"
+                        data-question="{{ forloop.counter0 }}"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label>Correct Answer</label>
+                  <div
+                    id="correct-answer-options-{{ forloop.counter0 }}"
+                    class="correct-answer-container"
+                  ></div>
+                  <input
+                    type="hidden"
+                    name="form-{{ forloop.counter0 }}-correct_answer"
+                    id="correct_answer_{{ forloop.counter0 }}"
+                    class="correct_answer"
+                    required
+                  />
+                </div>
+
+                <ul class="errors p-2"></ul>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div
+          class="alert alert-danger"
+          id="overall-errors"
+          role="alert"
+          style="display: none"
+        >
+          <ul></ul>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg btn-block mb-5">
+          Save Questions
+        </button>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Function to handle image preview
+      function previewImage(input, previewContainerId) {
+        const file = input.files[0];
+        const previewContainer = document.getElementById(previewContainerId);
+        previewContainer.innerHTML = ""; // Clear existing content
+
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.classList.add("img-fluid");
+            img.style.maxWidth = "200px"; // Optional: Limit the width
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      // Event listener for image file input change
+      document.addEventListener("change", function (event) {
+        if (event.target.type === "file") {
+          const inputId = event.target.id;
+          const questionNumber = inputId.split("_")[1].split("-")[1]; // Extract question number
+          console.log(
+            event.target,
+            questionNumber,
+            inputId,
+            `image-preview_${questionNumber}`
+          );
+          previewImage(event.target, `image-preview_${questionNumber}`); // Call preview function
+        }
+      });
+
+      // Function to update correct answer options dynamically
+      function updateCorrectAnswerOption(
+        optionValue,
+        questionNumber,
+        optionIndex
+      ) {
+        let correctAnswer = document.getElementById(
+          `correct_answer_${questionNumber}`
+        );
+        const correctAnswerContainer = document.getElementById(
+          `correct-answer-options-${questionNumber}`
+        );
+        let optionElement = correctAnswerContainer.querySelector(
+          `.correct-answer-option[data-index="${optionIndex}"]`
+        );
+
+        // Create new option if it doesn't exist
+        if (!optionElement && optionValue.trim() !== "") {
+          optionElement = document.createElement("div");
+          optionElement.classList.add("correct-answer-option");
+          optionElement.innerText = optionValue;
+          optionElement.setAttribute("data-index", optionIndex);
+          optionElement.setAttribute("questionNumber", questionNumber);
+          optionElement.setAttribute("inputValue", optionValue);
+
+          let questionNum = optionElement.getAttribute("questionNumber");
+          let inputVal = optionElement.getAttribute("inputValue");
+
+          // Event listener to select the correct answer
+          optionElement.addEventListener("click", function () {
+            const allOptions = correctAnswerContainer.querySelectorAll(
+              ".correct-answer-option"
+            );
+            allOptions.forEach((option) => option.classList.remove("selected"));
+            optionElement.classList.add("selected");
+
+            correctAnswer.value = optionElement.getAttribute("inputValue");
+
+            // Log the values to the console
+            console.log("Question optionElement:", optionElement);
+            console.log("correctAnswer input:", correctAnswer);
+            console.log("correct_answer_ value", correctAnswer.value);
+          });
+
+          correctAnswerContainer.appendChild(optionElement);
+        } else if (optionElement) {
+          // Update existing option
+          if (optionValue.trim() !== "") {
+            optionElement.innerText = optionValue;
+            optionElement.setAttribute("questionNumber", questionNumber);
+            optionElement.setAttribute("inputValue", optionValue);
+          } else {
+            // Remove option if input is empty
+            correctAnswerContainer.removeChild(optionElement);
+          }
+        }
+      }
+
+      // Event listener for input changes in option fields
+      document.addEventListener("input", function (event) {
+        if (event.target.classList.contains("option-input")) {
+          const questionNumber = event.target.getAttribute("data-question");
+          const optionIndex = event.target.name.split("_")[1]; // Get the index
+          const optionValue = event.target.value;
+
+          // Update correct answer options
+          updateCorrectAnswerOption(optionValue, questionNumber, optionIndex);
+        }
+      });
+
+      const qForm = document.getElementById("qForm");
+
+      qForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Convert NodeList to an array and filter for names starting with 'correct_answer_'
+        let correctAnswers = Array.from(
+          document.querySelectorAll(".correct_answer")
+        );
+
+        // Select all question cards
+        let questionCards = Array.from(document.querySelectorAll(".card"));
+
+        // Initialize an array to hold any validation errors
+        let isValid = true;
+        let overallErrorContainer = document.querySelector("#overall-errors"); // Assuming there's a container for overall errors
+
+        // If all question texts are empty, add a separate error
+        if (
+          questionCards.every((card) => {
+            let questionText = card.querySelector(".q_text");
+            return !questionText || questionText.value.trim() === "";
+          })
+        ) {
+          overallErrorContainer.innerHTML = ""; // Clear existing overall errors
+          let overallErrorMessage = document.createElement("li");
+          overallErrorMessage.className = "error text-danger";
+          overallErrorMessage.innerText =
+            "All questions are empty. Please provide at least one question.";
+          overallErrorContainer.appendChild(overallErrorMessage);
+          isValid = false;
+          overallErrorContainer.style.display = "block"; // Show the overall error container
+
+          return;
+        }
+
+        questionCards.every((card) => {
+          let questionText = card.querySelector(".q_text");
+          if (!questionText || questionText.value.trim() === "") {
+            card.querySelector(".delete_if_empty").checked = true;
+          }
+        });
+
+        // Log the filtered elements
+        // correctAnswers.forEach((answer) => console.log(answer));
+        // console.log(correctAnswers);
+
+        console.log(questionCards);
+        // Loop through each question card to validate answers
+        questionCards.forEach((card, index) => {
+          let errorContainer = card.querySelector(".errors");
+          // Check if the card has text (you can customize this based on your HTML structure)
+          let questionText = card.querySelector(".q_text"); // Adjust this selector based on your structure
+
+          console.log(questionText);
+
+          if (questionText && questionText?.value?.trim() !== "") {
+            // Check if an answer is selected for this question
+            let selectedAnswer = card.querySelector(".correct_answer");
+
+            console.log(selectedAnswer);
+            console.log(selectedAnswer.value);
+            // Change selector based on input type
+            if (!selectedAnswer.value || selectedAnswer.value === "") {
+              errorContainer.innerHTML = ""; // Clear existing overall errors
+              let errorMessage = document.createElement("li");
+              errorMessage.className = "error text-danger";
+              errorMessage.innerText = `Please select an answer for question ${
+                index + 1
+              }`;
+              errorContainer.appendChild(errorMessage);
+              isValid = false;
+            }
+          }
+        });
+
+        // If there are validation errors, log them and stop submission
+        if (!isValid) {
+          overallErrorContainer.innerHTML = ""; // Clear existing overall errors
+
+          let overallErrorMessage = document.createElement("li");
+          overallErrorMessage.className = "error text-danger";
+          overallErrorMessage.innerText = "Validation errors found";
+          overallErrorContainer.appendChild(overallErrorMessage);
+
+          overallErrorContainer.style.display = "block"; // Show the overall error container
+          console.error(
+            "Validation errors found, check below each question please."
+          );
+          return; // Stop form submission
+        }
+
+        // If validation passes, proceed with form submission (or other actions)
+        console.log("Form is valid. Proceeding with submission...");
+        qForm.submit();
+        // console.log(event);
+        // console.log(event.submit);
+        // You can submit the form programmatically here or perform other actions
+        // e.g., document.getElementById("qForm").submit();
+      });
+    </script>
+  </body>
+</html>
