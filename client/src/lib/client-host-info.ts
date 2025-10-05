@@ -26,7 +26,7 @@ export function getSubdomainClient(): string | null {
     const host = window.location.host;
     return extractSubdomain(host);
   } catch (error) {
-    console.error("Error getting subdomain on client:", error);
+    console.warn("Error getting subdomain on client:", error);
     return null;
   }
 }

@@ -32,7 +32,7 @@ export async function getSubdomainServer(): Promise<string | null> {
 
     return extractSubdomain(host);
   } catch (error) {
-    console.error(
+    console.warn(
       "Error getting subdomain on server:",
       error instanceof Error ? error.message : error
     );
