@@ -120,8 +120,9 @@ const authOptions: NextAuthOptions = {
 
           if (
             typeof response?.data !== "object" ||
-            "access"! in response?.data
+            !("access" in response?.data)
           ) {
+            console.log("\n\n\n\n Response: ", response.data, "\n\n\n\n");
             console.error("Invalid response from auth server:", response);
             throw new Error(
               "Authentication failed: Invalid response from server"
@@ -132,6 +133,7 @@ const authOptions: NextAuthOptions = {
             const data = response.data as TokenResponse;
             const { access } = data;
             let refresh = "";
+
             if (typeof data == "object" && "refresh" in data) {
               const { refresh } = data;
             }
@@ -197,6 +199,13 @@ const authOptions: NextAuthOptions = {
 
               cookieStore.set("refreshToken", refresh, {
                 httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                path: "/",
+              });
+
+              cookieStore.set("school_subdomain", subdomain, {
+                httpOnly: false,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "strict",
                 path: "/",
@@ -345,6 +354,7 @@ const authOptions: NextAuthOptions = {
       cookieStore.delete("accessToken");
       cookieStore.delete("refreshToken");
       cookieStore.delete("next-auth.session-token");
+      cookieStore.delete("school_subdomain");
       console.log("\n\n\n\n\nDeleted cookies\n\n\n\n\n");
     },
   },

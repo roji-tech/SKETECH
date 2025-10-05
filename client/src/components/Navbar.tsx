@@ -29,6 +29,13 @@ const Navbar = () => {
         redirect: false,
       });
 
+      // Clear client-side subdomain storage
+      if (typeof window !== "undefined") {
+        document.cookie =
+          "school_subdomain=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+        sessionStorage.removeItem("school_subdomain");
+      }
+
       // Call server-side sign out
       await customSignOut();
 

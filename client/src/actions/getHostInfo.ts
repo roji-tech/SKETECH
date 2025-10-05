@@ -4,7 +4,7 @@
 
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import {
   extractSubdomain,
   extractMainDomain,
@@ -19,10 +19,22 @@ import {
  */
 export async function getSubdomainServer(): Promise<string | null> {
   try {
+    // If NO_SUBDOMAIN is set, try to get subdomain from cookies first
+    if (process.env.NO_SUBDOMAIN) {
+      const cookieStore = await cookies();
+      console.log("Cookie Store:", process.env.NO_SUBDOMAIN, cookieStore);
+      let subdomain = cookieStore?.get("school_subdomain")?.value || null;
+
+      if (!subdomain && typeof window !== "undefined") {
+        subdomain = sessionStorage.getItem("school_subdomain") || null;
+      }
+
+      if (subdomain) return subdomain;
+    }
+
     const headersList = await headers();
     const host = headersList.get("host");
 
-    // Log only the host value, not the entire headers object
     console.log("Host:", host);
 
     if (!host) {

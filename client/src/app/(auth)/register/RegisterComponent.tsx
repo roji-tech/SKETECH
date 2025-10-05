@@ -8,7 +8,7 @@ import { signIn } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { API_URL } from "../../../../config";
-import { apiPost } from "@/actions/fetchApi";
+import { apiPost, setSubdomain } from "@/actions/fetchApi";
 
 // Define type for signup form data
 type SignupFormInputs = {
@@ -94,6 +94,8 @@ export default function RegisterComponent() {
     };
 
     try {
+      await setSubdomain(data.subdomain);
+      sessionStorage.setItem("school_subdomain", data.subdomain);
       const response = await apiPost("/auth/users/", payload, {
         no_auth: true,
       });
@@ -113,16 +115,28 @@ export default function RegisterComponent() {
         });
 
         if (signInResponse?.ok) {
+          // Inside the onSubmit function, after successful registration:
+          // Store subdomain in both cookies and sessionStorage
+          document.cookie = `school_subdomain=${
+            data.subdomain
+          }; path=/; max-age=${60 * 60 * 24 * 30}`; // 30 days
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("school_subdomain", data.subdomain);
+          }
+
           toast.success("Registration successful! Redirecting...");
           // Use window.location for full page reload to ensure all auth state is properly set
-          window.location.href = getSubdomainUrl(
-            data.subdomain,
-            "/signup-success"
-          );
+          const redirectUrl = process.env.NEXT_PUBLIC_NO_SUBDOMAIN
+            ? "/signup-success"
+            : getSubdomainUrl(data.subdomain, "/signup-success");
+          window.location.href = redirectUrl;
         } else {
           // If sign-in fails, redirect to login page
           toast.success("Account created successfully! Please sign in.");
-          router.push(getSubdomainUrl(data.subdomain, "/login"));
+          const redirectUrl = process.env.NEXT_PUBLIC_NO_SUBDOMAIN
+            ? "/login"
+            : getSubdomainUrl(data.subdomain, "/login");
+          window.location.href = redirectUrl;
         }
       } else {
         console.log(response);

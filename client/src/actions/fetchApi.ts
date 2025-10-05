@@ -86,7 +86,12 @@ async function getAuthHeaders(request?: Request | any): Promise<AuthHeaders> {
     cookieStore?.get("accessToken")?.value ||
     cookieStore?.get("token")?.value;
 
-  const subdomain = await getSubdomainServer();
+  let subdomain = await getSubdomainServer();
+
+  // If NO_SUBDOMAIN is set, try to get subdomain from client-side storage
+  if (process.env.NO_SUBDOMAIN && typeof window !== "undefined" && !subdomain) {
+    subdomain = sessionStorage.getItem("school_subdomain") || null;
+  }
 
   const authHeaders: AuthHeaders = {};
   if (accessToken) authHeaders.Authorization = `Bearer ${accessToken}`;
@@ -189,7 +194,7 @@ export async function apiRequest<T = any>({
 
       const data =
         typeof axiosError.response.data == "object"
-          ? (axiosError.response.data) as any
+          ? (axiosError.response.data as any)
           : { errors: "____" };
 
       for (const [key, value] of Object.entries(
@@ -230,6 +235,18 @@ export async function apiRequest<T = any>({
       message: axiosError.message || String(err),
     };
   }
+}
+
+// ===================== Verb Helpers =====================
+export async function setSubdomain(subdomain: string) {
+  const cookieStore = await nextCookies();
+
+  cookieStore.set("school_subdomain", subdomain, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+  });
 }
 
 // ===================== Verb Helpers =====================
