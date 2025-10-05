@@ -1,13 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import { useForm, SubmitHandler } from "react-hook-form";
-import axios from "axios";
 import { signIn } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
-import { API_URL } from "../../../../config";
 import { apiPost, setSubdomain } from "@/actions/fetchApi";
 
 // Define type for signup form data
@@ -58,7 +55,6 @@ const getSubdomainUrl = (subdomain: string, path: string = "") => {
 };
 
 export default function RegisterComponent() {
-  const router = useRouter(); // Initialize useRouter for navigation
   const [loading, setLoading] = useState(false); // State to manage loading status
 
   const {
