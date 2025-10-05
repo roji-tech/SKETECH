@@ -6,7 +6,7 @@ __init__.cpython-311.pyc
 .venv
 /media/
 .env
-*.txt
+# *.txt
 
 
 
